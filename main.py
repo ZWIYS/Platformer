@@ -1,6 +1,5 @@
 import pygame
 
-
 # инициализация окна игры
 pygame.init()
 # разрешение экрана + настройки окна
@@ -154,7 +153,7 @@ class Player:
         self.index = 0
         self.counter = 0
         for num in range(1, 12):
-            player_image_right = pygame.image.load(f"sprite_pack/Base pack/Player/p1_walk/PNG/p1_walk{num}.png")
+            player_image_right = pygame.image.load(f"img/PNG/p1_walk{num}.png")
             player_image_right = pygame.transform.scale(player_image_right, (35, 60))
             player_image_left = pygame.transform.flip(player_image_right, True, False)
             self.images_right.append(player_image_right)
@@ -211,8 +210,8 @@ class World:
         self.tile_list = []
 
         # загрузка изображений
-        dirt = pygame.image.load("sprite_pack/Base pack/Tiles/dirtCenter.png")
-        grass = pygame.image.load("sprite_pack/Base pack/Tiles/grass.png")
+        dirt = pygame.image.load("img/dirtCenter.png")
+        grass = pygame.image.load("img/grass.png")
         # цикл отрисовки
         row_count = 0
         for row in data:
