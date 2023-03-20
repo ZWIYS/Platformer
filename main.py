@@ -23,6 +23,12 @@ background = pygame.image.load("img/back_ground.jpeg")
 background = pygame.transform.scale(background, (screen_width, screen_height))
 restart_img = pygame.image.load("img/restart_btn.png")
 
+up_arrow_img = pygame.image.load("img/up_arrow.png")
+up_arrow_img = pygame.transform.scale(up_arrow_img, (tile_size, tile_size))
+left_arrow_img = pygame.image.load("img/left_arrow.png")
+left_arrow_img = pygame.transform.scale(left_arrow_img, (tile_size, tile_size))
+right_arrow_img = pygame.image.load("img/right_arrow.png")
+right_arrow_img = pygame.transform.scale(right_arrow_img, (tile_size, tile_size))
 
 # класс кнопок
 class Buttons:
@@ -57,7 +63,6 @@ class Player:
     def __init__(self, x, y):
         self.reset(x, y)
 
-    # все связанное с изменениями
     # (в плане характеристик) класса игрока
     def update(self, game_over):
 
@@ -66,41 +71,51 @@ class Player:
         dy = 0
         speed = 3.5
         walk_cooldown = 1  # скорость анимации ходьбы
+        action = False
+        self.clicked = False
 
         if game_over == 0:
             # реагирование нажатие кнопок
             keys = pygame.key.get_pressed()
+            pos = pygame.mouse.get_pos()
             # управление игроком
-            if keys[pygame.K_UP] and self.jumped is False:
-                self.vel_y = -15
-                self.jumped = True
-            if keys[pygame.K_LEFT]:
-                dx -= speed
-                self.counter += 1
-                self.direction = -1
-            if keys[pygame.K_RIGHT]:
-                dx += speed
-                self.counter += 1
-                self.direction = 1
-            if keys[pygame.K_LEFT] is False and keys[pygame.K_RIGHT] is False:
-                self.counter = 0
-                self.index = 0
-                if self.direction == 1:
-                    self.image = self.images_right[self.index]
-                if self.direction == -1:
-                    self.image = self.images_left[self.index]
+            if up_arrow.rect.collidepoint(pos) and self.jumped is False:
+                    if pygame.mouse.get_pressed()[0] == 1:
+                        self.vel_y = -15
+                        self.jumped = True
+                        self.clicked = True
 
-            # хендлер анимации
-            if keys[pygame.K_LEFT] or keys[pygame.K_RIGHT]:
-                if self.counter > walk_cooldown:
+            if left_arrow.rect.collidepoint(pos):
+                if pygame.mouse.get_pressed()[0] == 1:
+                    dx -= speed
+                    self.counter += 1
+                    self.direction = -1
+            if right_arrow.rect.collidepoint(pos):
+                if pygame.mouse.get_pressed()[0] == 1:
+                    dx += speed
+                    self.counter += 1
+                    self.direction = 1
+            if right_arrow.rect.collidepoint(pos) or left_arrow.rect.collidepoint(pos):
+                if pygame.mouse.get_pressed()[0] == 0:
                     self.counter = 0
-                    self.index += 1
-                    if self.index >= len(self.images_right):
-                        self.index = 0
+                    self.index = 0
                     if self.direction == 1:
                         self.image = self.images_right[self.index]
                     if self.direction == -1:
                         self.image = self.images_left[self.index]
+
+            # хендлер анимации
+            if right_arrow.rect.collidepoint(pos) or left_arrow.rect.collidepoint(pos):
+                if pygame.mouse.get_pressed()[0] == 1:
+                    if self.counter > walk_cooldown:
+                        self.counter = 0
+                        self.index += 1
+                        if self.index >= len(self.images_right):
+                            self.index = 0
+                        if self.direction == 1:
+                            self.image = self.images_right[self.index]
+                        if self.direction == -1:
+                            self.image = self.images_left[self.index]
 
             # гравитация (прыжок)
             self.vel_y += 1
@@ -262,20 +277,24 @@ world_data = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
     [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 2, 0, 0, 2, 2, 2, 0, 0, 2, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 2, 2, 4, 4, 4, 4, 4, 4, 4, 2, 2, 0, 0, 3, 0, 1],
-    [2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2],
+    [1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+    [1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 
 
-player = Player(50, screen_height - 127)
+player = Player(50, 151)
 slime_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
 world = World(world_data)
 
 # кнопки
 restart_button = Buttons(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
+
+up_arrow = Buttons(850, 600, up_arrow_img)
+left_arrow = Buttons(50, 600, left_arrow_img)
+right_arrow = Buttons(150, 600, right_arrow_img)
 
 # основной цикл игры
 game_is_running = True
@@ -297,6 +316,10 @@ while game_is_running:
     lava_group.draw(screen)
 
     game_over = player.update(game_over)
+
+    up_arrow.draw()
+    left_arrow.draw()
+    right_arrow.draw()
 
     if game_over == -1:
         if restart_button.draw():
