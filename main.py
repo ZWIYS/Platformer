@@ -1,4 +1,6 @@
 import pygame
+import pickle
+from os import path
 
 # инициализация окна игры
 pygame.init()
@@ -17,6 +19,9 @@ clock = pygame.time.Clock()
 # глобальные переменные
 tile_size = 50
 game_over = 0
+main_menu = True
+level = 1
+max_levels = 2
 
 # добавление всех изображений
 background = pygame.image.load("img/back_ground.jpeg")
@@ -29,6 +34,22 @@ left_arrow_img = pygame.image.load("img/left_arrow.png")
 left_arrow_img = pygame.transform.scale(left_arrow_img, (tile_size, tile_size))
 right_arrow_img = pygame.image.load("img/right_arrow.png")
 right_arrow_img = pygame.transform.scale(right_arrow_img, (tile_size, tile_size))
+start_btn_img = pygame.image.load("img/start_btn.png")
+exit_btn_img = pygame.image.load("img/exit_btn.png")
+
+
+def reset_level(level):
+    player.reset(50, 450)
+    slime_group.empty()
+    lava_group.empty()
+    exit_group.empty()
+
+    if path.exists(f'level{level}_data'):
+        pickle_in = open(f'level{level}_data', 'rb')
+        world_data = pickle.load(pickle_in)
+    world = World(world_data)
+
+    return world
 
 # класс кнопок
 class Buttons:
@@ -61,7 +82,7 @@ class Buttons:
 # класс игрока
 class Player:
     def __init__(self, x, y):
-        self.reset(x, y)
+        self.reset(50, 450)
 
     # (в плане характеристик) класса игрока
     def update(self, game_over):
@@ -78,6 +99,7 @@ class Player:
             # реагирование нажатие кнопок
             keys = pygame.key.get_pressed()
             pos = pygame.mouse.get_pos()
+            touch = pygame.FINGERDOWN
             # управление игроком
             if up_arrow.rect.collidepoint(pos) and self.jumped is False:
                     if pygame.mouse.get_pressed()[0] == 1:
@@ -105,7 +127,7 @@ class Player:
                         self.image = self.images_left[self.index]
 
             # хендлер анимации
-            if right_arrow.rect.collidepoint(pos) or left_arrow.rect.collidepoint(pos):
+            if right_arrow.rect.collidepoint(pos) or left_arrow.rect.collidepoint(pos) and touch:
                 if pygame.mouse.get_pressed()[0] == 1:
                     if self.counter > walk_cooldown:
                         self.counter = 0
@@ -136,7 +158,7 @@ class Player:
                         self.vel_y = 0
 
                     # падает
-                    if self.vel_y > 0:
+                    if self.vel_y >= 0:
                         dy = tile[1].top - self.rect.bottom
                         self.vel_y = 0
                         self.jumped = False
@@ -146,6 +168,9 @@ class Player:
 
             if pygame.sprite.spritecollide(self, lava_group, False):
                 game_over = -1
+
+            if pygame.sprite.spritecollide(self, exit_group, False):
+                game_over = 1
 
             # отрисовка нового положения
             self.rect.x += dx
@@ -158,7 +183,7 @@ class Player:
 
         # отрисовка персонажа
         screen.blit(self.image, self.rect)
-        # pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+        pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
 
         return game_over
 
@@ -219,6 +244,18 @@ class Lava(pygame.sprite.Sprite):
         self.rect.y = y
 
 
+class Exit_gate(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+
+        # изображения
+        img = pygame.image.load("img/exit.png")
+        self.image = pygame.transform.scale(img, (tile_size, int(tile_size * 1.5)))
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+
+
 # класс мира (отрисовка карты)
 class World:
     def __init__(self, data):
@@ -256,6 +293,10 @@ class World:
                     lava = Lava(col_count * tile_size, row_count * tile_size + (tile_size // 2))
                     lava_group.add(lava)
 
+                if tile == 5:
+                    exit_gate = Exit_gate(col_count * tile_size, row_count * tile_size - (tile_size // 2))
+                    exit_group.add(exit_gate)
+
                 col_count += 1
             row_count += 1
 
@@ -265,36 +306,25 @@ class World:
             # pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
 
-# матрица карты
-world_data = [
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1],
-    [1, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-]
-
-
-player = Player(50, 151)
+player = Player(tile_size * 2, tile_size)
 slime_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
+exit_group = pygame.sprite.Group()
+
+# матрица карты
+if path.exists(f'level{level}_data'):
+    pickle_in = open(f'level{level}_data', 'rb')
+    world_data = pickle.load(pickle_in)
 world = World(world_data)
 
 # кнопки
 restart_button = Buttons(screen_width // 2 - 50, screen_height // 2 + 100, restart_img)
-
 up_arrow = Buttons(850, 600, up_arrow_img)
 left_arrow = Buttons(50, 600, left_arrow_img)
 right_arrow = Buttons(150, 600, right_arrow_img)
+start_btn = Buttons(screen_width // 2 - 350, screen_height // 2, start_btn_img)
+exit_btn = Buttons(screen_width // 2 + 50, screen_height // 2, exit_btn_img)
+
 
 # основной цикл игры
 game_is_running = True
@@ -306,25 +336,49 @@ while game_is_running:
     # отображение всех изображений (важен порядок)
     screen.blit(background, (0, 0))
 
-    # отрисовка классов
-    world.draw()
+    # отрисовка классов/кнопок
+    if main_menu == True:
+        if exit_btn.draw():
+            game_is_running = False
 
-    if game_over == 0:
-        slime_group.update()
+        if start_btn.draw():
+            main_menu = False
 
-    slime_group.draw(screen)
-    lava_group.draw(screen)
+    else:
+        world.draw()
 
-    game_over = player.update(game_over)
+        if game_over == 0:
+            slime_group.update()
 
-    up_arrow.draw()
-    left_arrow.draw()
-    right_arrow.draw()
+        slime_group.draw(screen)
+        lava_group.draw(screen)
+        exit_group.draw(screen)
 
-    if game_over == -1:
-        if restart_button.draw():
-            player.reset(50, 151)
-            game_over = 0
+        game_over = player.update(game_over)
+
+        up_arrow.draw()
+        left_arrow.draw()
+        right_arrow.draw()
+
+
+        if game_over == -1:
+            if restart_button.draw():
+                world_data = []
+                world = reset_level(level)
+                game_over = 0
+
+        if game_over == 1:
+            level += 1
+            if level <= max_levels:
+                world_data = []
+                world = reset_level(level)
+                game_over = 0
+            else:
+                if restart_button.draw():
+                    level = 1
+
+                    world_data = []
+                    world = reset_level
 
     # закрытие окна -> игры
     for event in pygame.event.get():
