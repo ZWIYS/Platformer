@@ -13,7 +13,7 @@ tile_size = 50
 cols = 20
 margin = 50
 screen_width = 1000
-screen_height = 800
+screen_height = 750
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Level Editor')
@@ -23,10 +23,13 @@ pygame.display.set_caption('Level Editor')
 
 bg_img = pygame.image.load('img/back_ground.jpeg')
 bg_img = pygame.transform.scale(bg_img, (screen_width, screen_height - margin))
-dirt_img = pygame.image.load("sprite_pack/Base pack/Tiles/dirtCenter.png")
-grass_img = pygame.image.load("sprite_pack/Base pack/Tiles/grass.png")
+dirt_img = pygame.image.load("img/dirtCenter.png")
+grass_img = pygame.image.load("img/grass.png")
 save_img = pygame.image.load('img/save_btn.png')
 load_img = pygame.image.load('img/load_btn.png')
+blob_img = pygame.image.load("img/blob.png")
+lava_img = pygame.image.load("img/lava.png")
+exit_gate = pygame.image.load("img/exit.png")
 
 
 #define game variables
@@ -37,7 +40,7 @@ level = 1
 white = (255, 255, 255)
 green = (144, 201, 120)
 
-font = pygame.font.SysFont('Futura', 24)
+font = pygame.font.SysFont('Futura', 14)
 
 #create empty tile list
 world_data = []
@@ -45,17 +48,12 @@ for row in range(20):
 	r = [0] * 20
 	world_data.append(r)
 
-#create boundary
-for tile in range(0, 20):
-	world_data[19][tile] = 2
-	world_data[0][tile] = 1
-	world_data[tile][0] = 1
-	world_data[tile][19] = 1
+
 
 #function for outputting text onto the screen
 def draw_text(text, font, text_col, x, y):
 	img = font.render(text, True, text_col)
-	screen.blit(img, (x, y))
+	screen.blit(img, (x, y + 15))
 
 def draw_grid():
 	for c in range(21):
@@ -77,7 +75,15 @@ def draw_world():
 					#grass blocks
 					img = pygame.transform.scale(grass_img, (tile_size, tile_size))
 					screen.blit(img, (col * tile_size, row * tile_size))
-
+				if world_data[row][col] == 3:
+					img = blob_img
+					screen.blit(img, (col * tile_size, row * tile_size))
+				if world_data[row][col] == 4:
+					img = lava_img
+					screen.blit(img, (col * tile_size, row * tile_size))
+				if world_data[row][col] == 5:
+					img = pygame.transform.scale(exit_gate, (tile_size, int(tile_size * 1.5)))
+					screen.blit(img, (col * tile_size, row * tile_size))
 
 
 
@@ -109,8 +115,8 @@ class Button():
 		return action
 
 #create load and save buttons
-save_button = Button(screen_width // 2 - 150, screen_height - 80, save_img)
-load_button = Button(screen_width // 2 + 50, screen_height - 80, load_img)
+save_button = Button(screen_width // 2 - 150, screen_height - 45, save_img)
+load_button = Button(screen_width // 2 + 50, screen_height - 45, load_img)
 
 #main game loop
 run = True

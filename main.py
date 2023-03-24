@@ -1,6 +1,7 @@
 import pygame
 import pickle
 from os import path
+import asyncio
 
 # инициализация окна игры
 pygame.init()
