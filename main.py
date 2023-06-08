@@ -1,3 +1,4 @@
+# подключение библиотек
 import pygame
 import pickle
 from os import path
@@ -9,6 +10,7 @@ pygame.init()
 screen_height = 700
 screen_width = 1000
 
+# вывод окна на экран
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("Platformer game!")
 
@@ -38,7 +40,7 @@ right_arrow_img = pygame.transform.scale(right_arrow_img, (tile_size, tile_size)
 start_btn_img = pygame.image.load("img/start_btn.png")
 exit_btn_img = pygame.image.load("img/exit_btn.png")
 
-
+# функция перезапуска уровня
 def reset_level(level):
     player.reset(50, 450)
     slime_group.empty()
@@ -107,7 +109,6 @@ class Player:
                         self.vel_y = -15
                         self.jumped = True
                         self.clicked = True
-
             if left_arrow.rect.collidepoint(pos):
                 if pygame.mouse.get_pressed()[0] == 1:
                     dx -= speed
@@ -148,17 +149,18 @@ class Player:
 
             # проверка коллизии
             for tile in world.tile_list:
-                # коллизия по Y
+                # коллизия по X
                 if tile[1].colliderect(self.rect.x + dx, self.rect.y, self.width, self.height):
                     dx = 0
                 # коллизия по Y
                 if tile[1].colliderect(self.rect.x, self.rect.y - dy, self.width, self.height):
+
                     # в прыжке
                     if self.vel_y < 0:
                         dy = tile[1].bottom - self.rect.top
                         self.vel_y = 0
 
-                    # падает
+                    # в падении
                     if self.vel_y >= 0:
                         dy = tile[1].top - self.rect.bottom
                         self.vel_y = 0
@@ -177,6 +179,7 @@ class Player:
             self.rect.x += dx
             self.rect.y -= dy
 
+        # отрисовка анимации смерти
         elif game_over == -1:
             self.image = self.dead_image
             if self.rect.y > 200:
@@ -184,10 +187,11 @@ class Player:
 
         # отрисовка персонажа
         screen.blit(self.image, self.rect)
-        pygame.draw.rect(screen, (255, 255, 255), self.rect, 2)
+
 
         return game_over
 
+    # отрисовка персонажа после смерти
     def reset(self, x, y):
         self.images_right = []
         self.images_left = []
@@ -212,12 +216,12 @@ class Player:
         self.direction = 0
         self.jump_counter = 0
 
-
+# класс врагов
 class Enemies(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
 
-        # изображения
+        # изображения врагов
         self.image = pygame.image.load("img/blob.png")
         self.rect = self.image.get_rect()
         self.rect.x = x
@@ -232,7 +236,7 @@ class Enemies(pygame.sprite.Sprite):
             self.move_direction *= -1
             self.move_counter *= -1
 
-
+# класс лавы
 class Lava(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -244,7 +248,7 @@ class Lava(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
 
-
+# выход из игры
 class Exit_gate(pygame.sprite.Sprite):
     def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
@@ -304,9 +308,11 @@ class World:
     def draw(self):
         for tile in self.tile_list:
             screen.blit(tile[0], tile[1])
+
+            # отрисовка сетки (для отладки)
             # pygame.draw.rect(screen, (255, 255, 255), tile[1], 2)
 
-
+# отрисовка изображений на карте
 player = Player(tile_size * 2, tile_size)
 slime_group = pygame.sprite.Group()
 lava_group = pygame.sprite.Group()
@@ -334,7 +340,7 @@ while game_is_running:
     # ограничение фпс
     clock.tick(fps)
 
-    # отображение всех изображений (важен порядок)
+    # отображение всех изображений (важен порядок строки 316-319)
     screen.blit(background, (0, 0))
 
     # отрисовка классов/кнопок
@@ -381,12 +387,12 @@ while game_is_running:
                     world_data = []
                     world = reset_level
 
-    # закрытие окна -> игры
+    # закрытие окна игры
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             game_is_running = False
 
-    # отрисовка изображений
+    # отрисовка всех изображений
     pygame.display.update()
 
 # завершение сеанса игры
