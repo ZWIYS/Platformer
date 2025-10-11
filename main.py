@@ -7,8 +7,8 @@ import asyncio
 # инициализация окна игры
 pygame.init()
 # разрешение экрана + настройки окна
-screen_height = 700
-screen_width = 1000
+screen_height = 1080
+screen_width = 1920
 
 # вывод окна на экран
 screen = pygame.display.set_mode((screen_width, screen_height))
