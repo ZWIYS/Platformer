@@ -20,7 +20,7 @@ clock = pygame.time.Clock()
 
 
 # глобальные переменные
-tile_size = 50
+tile_size = 100
 game_over = 0
 main_menu = True
 level = 1
